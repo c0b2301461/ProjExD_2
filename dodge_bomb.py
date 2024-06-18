@@ -7,10 +7,13 @@ import pygame as pg
 WIDTH, HEIGHT = 1600, 900
 DELTA = {
     pg.K_UP:(0,-5),
+    pg.K_RIGHT:(+5,0),
     pg.K_DOWN:(0,+5),
     pg.K_LEFT:(-5,0),
-    pg.K_RIGHT:(+5,0),
 }
+
+
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(rct:pg.Rect) -> tuple[bool,bool]:
@@ -19,6 +22,7 @@ def check_bound(rct:pg.Rect) -> tuple[bool,bool]:
     戻り値：真理値タプル（横方向、縦方向）
     画面内ならTrue 画面外ならFalse
     """
+
     yoko,tate = True,True
     if rct.left < 0 or WIDTH < rct.right: #横方向判定
         yoko = False
@@ -26,7 +30,21 @@ def check_bound(rct:pg.Rect) -> tuple[bool,bool]:
         tate = False
     return yoko,tate
 
+def speed():
+    """
+    加速度リストと拡大された爆弾Surfaceのリストを返す関数
+    """
+    saccs = [a for a in range(1, 11)]
+    bb_imgs = []
+    for r in range(1, 11):
+        bb_img = pg.Surface((20 * r, 20 * r), pg.SRCALPHA)
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
+        bb_imgs.append(bb_img)
+    return bb_imgs, saccs
 
+
+    
+    
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -34,14 +52,14 @@ def main():
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 2.0)
     kk_rct = kk_img.get_rect()
     kk_rct.center = 900, 400
-    bb_img = pg.Surface((20, 20))
-    bb_img.set_colorkey((0,0,0))
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
-    bb_rct = bb_img.get_rect()
+    bb_imgs,saccs = speed()
+    bb_rct = bb_imgs[0].get_rect()
     bb_rct.center = random.randint(0,WIDTH),random.randint(0,HEIGHT)
     vx,vy = +5,+5
     clock = pg.time.Clock()
     tmr = 0
+
+
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
@@ -61,13 +79,17 @@ def main():
             kk_rct.move_ip(-sum_mv[0],-sum_mv[1])
         screen.blit(kk_img, kk_rct)
         
-        bb_rct.move_ip(vx,vy)
+        idx = min(tmr // 500 , 9)
+        bb_rct = bb_imgs[idx].get_rect(center=bb_rct.center)
+        avx = vx * saccs[idx]
+        avy = vy * saccs[idx]
+        bb_rct.move_ip(avx,avy)
         yoko,tate = check_bound (bb_rct)
         if not yoko:
             vx *= -1
         if not tate:
             vy *= -1
-        screen.blit(bb_img, bb_rct)
+        screen.blit(bb_imgs[idx], bb_rct)
         pg.display.update()
         tmr += 1
         clock.tick(50)
