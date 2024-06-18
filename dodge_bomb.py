@@ -34,9 +34,9 @@ def speed():
     """
     加速度リストと拡大された爆弾Surfaceのリストを返す関数
     """
-    saccs = [a for a in range(1, 11)]
+    saccs = [a for a in range(1, 11)]#加速度のリストを作り10段階の大きさで設定する
     bb_imgs = []
-    for r in range(1, 11):
+    for r in range(1, 11): 
         bb_img = pg.Surface((20 * r, 20 * r), pg.SRCALPHA)
         pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
         bb_imgs.append(bb_img)
